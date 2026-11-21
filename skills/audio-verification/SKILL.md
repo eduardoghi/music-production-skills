@@ -25,8 +25,10 @@ Read only the file that matches the problem. Each one is self-contained.
   [references/velocities.md](references/velocities.md).
 - **A passage between sections sounds broken, or a piece is about to be exported.** See
   [references/transitions.md](references/transitions.md).
-- **A recorded vocal take has to be placed against a guide, checked for pitch or tuned.** See
-  [references/vocal-takes.md](references/vocal-takes.md).
+- **A recorded vocal take has to be placed against a guide, identified, checked for pitch, tuned or cleaned of
+  plosives.** See [references/vocal-takes.md](references/vocal-takes.md).
+- **A processor's effect has to be judged, or a part is covered by others in a mix.** See
+  [references/mix-processing.md](references/mix-processing.md).
 
 ## Commands
 
