@@ -112,17 +112,23 @@ def render_process_check(res: dict, settings: dict) -> dict:
 def cmd_render(a):
     project = Path(a.project)
     settings, plugins = rpp.read(project) if project.is_file() else ({}, [])
+    media = rpp.media_files(project.read_text(encoding="utf-8", errors="replace")) if project.is_file() else []
     off_standard = render.deviations(settings, plugins) if settings else []
     # without --seconds, the length follows from the saved bounds and tail
     seconds = a.seconds if a.seconds is not None else render.expected_seconds(settings)
     # a render writes over its target without asking, which would destroy an earlier render kept as evidence
-    existing = sorted({str(p) for p in [*render.targets(settings), *map(Path, a.expect or [])] if p.exists()})
-    if existing and not a.overwrite:
+    records = [Path(a.manifest)] if a.manifest else []
+    if a.expect:
+        records.append(Path(a.expect[0]).with_suffix(".render.json"))
+    pre = render.preflight(
+        project, settings, media, a.expect or [], overwrite=a.overwrite, replace=a.replace or [], records=records
+    )
+    if not pre["ok"]:
         return emit(
-            {"ok": False, "error": "target files exist, pass --overwrite to replace them", "existing": existing}, 1
+            {"ok": False, "error": "the render was refused before it started", "refusals": pre["errors"], **pre}, 1
         )
     # REAPER asks before writing over a file when it renders from a script, so the files allowed to go are removed
-    for path in existing:
+    for path in pre["delete"]:
         Path(path).unlink()
     res = render.render_project(
         project, timeout=a.timeout, mode=a.mode, settle=a.settle, fx_delay=settings.get("fx_delay") or 0.0
@@ -149,7 +155,12 @@ def cmd_render(a):
         "abnormal_exit": abnormal,
         "standard": {"ok": not off_standard, "deviations": off_standard, "allowed": bool(a.allow_nonstandard)},
         "checks": checks,
-        "project": {"path": str(project), "sha256": manifest.sha256_file(project) if project.is_file() else None},
+        # the absolute path, so a later --overwrite can tell which project a file came from whatever the working folder
+        "project": {
+            "path": str(project.resolve()),
+            "sha256": manifest.sha256_file(project) if project.is_file() else None,
+        },
+        "relative_media": pre["relative_media"],
         "settings": settings,
         "expected_seconds": seconds,
         "plugins": [{**p, **(manifest.plugin_version(p["file"]) if p["file"] else {})} for p in plugins],
@@ -227,7 +238,16 @@ def main(argv=None):
     rn.add_argument("--channels", type=int)
     rn.add_argument("--subtype", help="soundfile subtype, such as PCM_24 or FLOAT")
     rn.add_argument("--timeout", type=float, default=600.0)
-    rn.add_argument("--overwrite", action="store_true", help="replace target files that already exist")
+    rn.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="replace existing target files whose render record names this same project",
+    )
+    rn.add_argument(
+        "--replace",
+        nargs="*",
+        help="existing files to replace even without a record from this project (never a read-only file)",
+    )
     rn.add_argument(
         "--mode",
         choices=["script", "renderproject"],

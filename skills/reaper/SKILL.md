@@ -173,8 +173,12 @@ mps render project.rpp --expect out.wav --samplerate 44100 --channels 2 --subtyp
   waiting for the timeout. A plugin window left open when the project was saved reopens in the render process and
   counts as such a dialog, so close the windows (`fx.show` with `show` false) before saving a project for rendering. The progress window doesn't count, and the `fx_delay` prompt is answered with the
   project's own delay.
-- It refuses when a target file already exists, since a render writes over it without asking. Pass `--overwrite`
-  only for a file that isn't kept as evidence.
+- A render writes over its target without asking, and a project saved under a new name or copied into a variant keeps
+  its source's render path. So before starting, `mps render` refuses a relative `RENDER_FILE`, a file the project
+  renders to that `--expect` doesn't name, and media it can't find. `--overwrite` replaces only files whose render
+  record names this same project. Any other existing file has to be named with `--replace`, and a read-only file is
+  never replaced, which is how to protect a reference. Writing variants as text has its own traps
+  (`docs/render-standard.md`, Variants and overwrites).
 - Each expected file is checked for presence, format, channels, signal, being newer than the render, and the length
   the saved bounds and tail imply (or `--seconds`).
 - `ok` is true only when the files check out, the process exited with code 0 and the saved settings match the

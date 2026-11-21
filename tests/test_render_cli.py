@@ -1,6 +1,8 @@
 """How `mps render` combines the render process's outcome, the file checks and the render standard."""
 
 import json
+import os
+import stat
 
 import pytest
 
@@ -25,9 +27,12 @@ STANDARD_RPP = """<REAPER_PROJECT 0.1 "7.86/x64" 1794772900
 def fake_render(monkeypatch, tmp_path):
     out = tmp_path / "out.wav"
 
-    def run(returncode, file_ok=True, extra=(), rpp_text=None, exists=False, seen=None):
+    def run(returncode, file_ok=True, extra=(), rpp_text=None, exists=False, seen=None, record_project=None):
         if exists:
-            out.write_bytes(b"")
+            out.write_bytes(b"keep")
+        if record_project is not None:
+            rec = {"project": {"path": str(record_project)}, "checks": [{"path": str(out)}]}
+            (tmp_path / "out.render.json").write_text(json.dumps(rec), encoding="utf-8")
         project = tmp_path / "p.rpp"
         if rpp_text is not None:
             project.write_text(rpp_text.format(wav=str(out).replace("\\", "\\\\")), encoding="utf-8")
@@ -71,8 +76,71 @@ def test_existing_target_is_refused_without_overwrite(fake_render, capsys):
     assert "existing" in r and "returncode" not in r
 
 
-def test_existing_target_is_replaced_with_overwrite(fake_render, capsys):
-    assert fake_render(0, exists=True, extra=["--overwrite"]) == 0
+def test_overwrite_replaces_a_file_rendered_from_the_same_project(fake_render, tmp_path):
+    assert fake_render(0, exists=True, extra=["--overwrite"], record_project=tmp_path / "p.rpp") == 0
+
+
+def test_overwrite_refuses_a_file_without_a_record(fake_render, capsys, tmp_path):
+    assert fake_render(0, exists=True, extra=["--overwrite"]) == 1
+    r = result(capsys)
+    assert "no render record" in r["refusals"][0] and "returncode" not in r
+    assert (tmp_path / "out.wav").read_bytes() == b"keep"
+
+
+def test_overwrite_refuses_a_file_rendered_from_another_project(fake_render, capsys, tmp_path):
+    assert fake_render(0, exists=True, extra=["--overwrite"], record_project=tmp_path / "source.rpp") == 1
+    assert "source.rpp" in result(capsys)["refusals"][0]
+    assert (tmp_path / "out.wav").read_bytes() == b"keep"
+
+
+def test_replace_names_a_file_to_replace_on_purpose(fake_render, tmp_path):
+    assert fake_render(0, exists=True, extra=["--replace", str(tmp_path / "out.wav")]) == 0
+
+
+def test_a_read_only_target_is_never_replaced(fake_render, capsys, tmp_path):
+    out = tmp_path / "out.wav"
+    out.write_bytes(b"keep")
+    os.chmod(out, stat.S_IREAD)
+    try:
+        assert fake_render(0, extra=["--overwrite", "--replace", str(out)], record_project=tmp_path / "p.rpp") == 1
+        assert "read-only" in result(capsys)["refusals"][0]
+        assert out.read_bytes() == b"keep"
+    finally:
+        os.chmod(out, stat.S_IREAD | stat.S_IWRITE)
+
+
+def test_a_relative_render_file_is_refused(fake_render, capsys):
+    rel = STANDARD_RPP.replace('RENDER_FILE "{wav}"', 'RENDER_FILE "renders\\\\out.wav"')
+    assert fake_render(0, rpp_text=rel) == 1
+    assert "relative" in result(capsys)["refusals"][0]
+
+
+def test_a_render_path_inherited_from_another_project_is_refused(fake_render, capsys, tmp_path):
+    # a variant saved under a new name still renders to the file of the project it was copied from
+    source = tmp_path / "source.wav"
+    source.write_bytes(b"evidence")
+    inherited = STANDARD_RPP.replace("{wav}", str(source).replace("\\", "\\\\"))
+    assert fake_render(0, rpp_text=inherited, extra=["--overwrite"]) == 1
+    r = result(capsys)
+    assert any("doesn't name" in e for e in r["refusals"]) and "returncode" not in r
+    assert source.read_bytes() == b"evidence"
+
+
+def test_missing_media_is_refused_and_relative_media_resolve_from_the_project(fake_render, capsys, tmp_path):
+    (tmp_path / "take.wav").write_bytes(b"")
+    item = '  <TRACK\n    <ITEM\n      <SOURCE WAVE\n        FILE "{0}"\n      >\n    >\n  >\n'
+    relative = STANDARD_RPP.replace("\n>\n", "\n" + item.format("take.wav") + ">\n")
+    assert fake_render(0, rpp_text=relative) == 0
+    assert result(capsys)["relative_media"] == ["take.wav"]
+    missing = STANDARD_RPP.replace("\n>\n", "\n" + item.format("gone.wav") + ">\n")
+    assert fake_render(0, rpp_text=missing, extra=["--overwrite"]) == 1
+    assert "gone.wav" in result(capsys)["refusals"][0]
+
+
+def test_the_record_keeps_the_absolute_project_path(fake_render, capsys, tmp_path):
+    assert fake_render(0, rpp_text=STANDARD_RPP) == 0
+    rec = json.loads((tmp_path / "out.render.json").read_text(encoding="utf-8"))
+    assert os.path.isabs(rec["project"]["path"])
 
 
 def test_standard_project_passes_and_writes_a_manifest(fake_render, capsys, tmp_path):

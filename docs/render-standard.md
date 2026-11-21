@@ -38,8 +38,44 @@ writes a record next to the first expected file (`<name>.render.json`), or where
 A render counts as `ok` only when the process exited with code 0, every file checks out and the settings match the
 standard, including a load delay when an instrument plugin is present. `--allow-nonstandard` accepts other settings, and the record still lists the differences.
 
-A render writes over its target without asking. `mps render` refuses when a target file already exists, either the
-one the project names or one passed with `--expect`, unless `--overwrite` is given.
+## Variants and overwrites
+
+A render writes over its target without asking. Measurement variants are often made by copying a saved project's text
+and changing a few lines (mutes, bypasses, the render path), which the bridge can't do in one call. Three things went
+wrong that way (**Tested**, REAPER 7.86):
+
+- **An inherited render path.** A copy keeps the source's `RENDER_FILE`. Variants rendered from such copies wrote over
+  the source version's render, and a project saved under a new name through the bridge still pointed at the render of
+  the project it came from until `render.configure` ran again.
+- **A relative render path.** With a `RENDER_FILE` written relative to the working folder of the command, the file
+  never appeared where `--expect` looked, which was the same relative path from that working folder. Where REAPER
+  wrote it wasn't checked. A relative path has no base that both REAPER and the command are sure to share, so it is
+  refused.
+- **A relative media path.** An item whose `FILE` was relative to the source project's folder couldn't be found from
+  a copy saved elsewhere, and the render process stopped at REAPER's missing file dialog.
+
+So `mps render` checks the saved project before starting (`render.preflight`), and refuses with nothing deleted when:
+
+| Check | Refused |
+|---|---|
+| Render path | `RENDER_FILE` is relative |
+| Render path against `--expect` | the project renders to a file that `--expect` doesn't name |
+| Media | an item's file exists neither at its path (a relative one taken from the project's folder) nor in the project's folder under the same name |
+| Existing target, without `--overwrite` | always |
+| Existing target, with `--overwrite` | its render record names another project, or there is no record, unless the file is named in `--replace` |
+| Read-only target | always, even when named in `--replace` |
+
+- **Ownership.** It comes from the record written next to the file (`<name>.render.json`), or from the record of this
+  render (`--manifest`, or the one next to the first expected file) when that record's checks list the file.
+- **Absolute project path.** Records keep the project's absolute path, so the comparison doesn't depend on the working
+  folder. A record from before this change may hold a relative path, which is compared from the current working
+  folder. When it doesn't match, the overwrite is refused, which errs on the safe side.
+- **Relative media.** Media written as relative paths are listed in the record (`relative_media`), so a project that
+  only works from its own folder is visible before it is copied.
+
+When writing a variant as text, make every `FILE` path absolute against the source project's folder, give the variant
+its own absolute `RENDER_FILE`, and pass that same file to `--expect`. To protect a reference render or a preserved
+version, mark it read-only (`attrib +R` on Windows).
 
 ## How the settings appear in a saved project
 

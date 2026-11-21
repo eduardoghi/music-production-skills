@@ -94,6 +94,16 @@ def plugins(text: str) -> list[dict]:
     return out
 
 
+def media_files(text: str) -> list[str]:
+    """The media files the project's items read (their `FILE` lines), as written, absolute or relative."""
+    out = []
+    for line in text.splitlines():
+        t = tokens(line.strip())
+        if len(t) >= 2 and t[0] == "FILE":
+            out.append(t[1])
+    return out
+
+
 def read(path: str | Path) -> tuple[dict, list[dict]]:
     text = Path(path).read_text(encoding="utf-8", errors="replace")
     return render_settings(text), plugins(text)

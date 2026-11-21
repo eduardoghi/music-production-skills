@@ -18,6 +18,7 @@ import json
 import os
 import subprocess
 import time
+from collections.abc import Sequence
 from pathlib import Path
 
 # The render standard for anything measured or compared (docs/render-standard.md). Float keeps peaks above 0 dBFS,
@@ -61,6 +62,104 @@ def targets(settings: dict) -> list[Path]:
     if any(c in pattern for c in "$*?"):
         return []
     return [Path(file) / (pattern + ext)]
+
+
+def _same(a: str | Path, b: str | Path) -> bool:
+    return os.path.normcase(os.path.abspath(a)) == os.path.normcase(os.path.abspath(b))
+
+
+def record_owner(path: Path, extra_records: Sequence[Path] = ()) -> str | None:
+    """The project a file was rendered from, by the render record written next to it or by one of `extra_records`
+    whose checks list the file. None when no record says so."""
+    for rec in [path.with_suffix(".render.json"), *extra_records]:
+        try:
+            data = json.loads(Path(rec).read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        listed = any(_same(c.get("path", ""), path) for c in data.get("checks", []) if c.get("path"))
+        if listed or _same(rec, path.with_suffix(".render.json")):
+            owner = (data.get("project") or {}).get("path")
+            if owner:
+                return owner
+    return None
+
+
+def preflight(
+    project: Path,
+    settings: dict,
+    media: Sequence[str],
+    expect: Sequence[str],
+    *,
+    overwrite: bool = False,
+    replace: Sequence[str] = (),
+    records: Sequence[Path] = (),
+) -> dict:
+    """Checks made before a render starts, so a project copied into a variant can't write over another render.
+
+    A render writes over its target without asking, and a project saved under a new name keeps the render path of the
+    one it came from. Refused, with nothing deleted:
+    - a relative RENDER_FILE, since REAPER and this command may not resolve it from the same folder, so the file
+      checked here and the file written could differ;
+    - a file the project renders to that --expect doesn't name (the inherited render path);
+    - a media file of the project that exists neither at its path (a relative one taken from the project's folder)
+      nor in the project's folder under the same name, which would stop the render at REAPER's missing file dialog;
+    - an existing target without --overwrite;
+    - with --overwrite, an existing target whose render record names another project, or that has no record, unless
+      it is named in --replace;
+    - a read-only target, always.
+    Returns the refusals, the files that may be deleted before rendering and the media written as relative paths.
+    """
+    errors, existing, delete = [], [], []
+    rf = settings.get("file") or ""
+    if rf and not Path(rf).is_absolute():
+        errors.append(
+            f"RENDER_FILE is relative ({rf}). REAPER may not resolve it from the working folder, so --expect and the"
+            " overwrite check could name another file. Save the project with an absolute render path"
+        )
+    outs = targets(settings)
+    if outs and expect:
+        for t in outs:
+            if not any(_same(t, e) for e in expect):
+                errors.append(
+                    f"the project renders to {t}, which --expect doesn't name. A project saved under a new name keeps"
+                    " the render path of the one it came from"
+                )
+    missing, relative = [], []
+    for m in media:
+        p = Path(m)
+        if not p.is_absolute():
+            relative.append(m)
+            p = project.parent / p
+        if not p.exists() and not (project.parent / p.name).exists():
+            missing.append(m)
+    if missing:
+        errors.append(f"media files not found: {', '.join(missing)}")
+    seen: list[Path] = []
+    for p in [*outs, *map(Path, expect)]:
+        if p.exists() and not any(_same(p, q) for q in seen):
+            seen.append(p)
+    for p in seen:
+        existing.append(str(p))
+        named = any(_same(p, r) for r in replace)
+        if not os.access(p, os.W_OK):
+            errors.append(f"{p} is read-only and is never replaced")
+        elif named:
+            delete.append(str(p))
+        elif not overwrite:
+            errors.append(f"{p} exists, pass --overwrite to replace it")
+        else:
+            owner = record_owner(p, records)
+            if owner is None:
+                errors.append(
+                    f"{p} has no render record naming its project. Name it with --replace to replace it on purpose"
+                )
+            elif not _same(owner, project):
+                errors.append(
+                    f"{p} was rendered from {owner}, not from this project. Name it with --replace to replace it"
+                )
+            else:
+                delete.append(str(p))
+    return {"ok": not errors, "errors": errors, "existing": existing, "delete": delete, "relative_media": relative}
 
 
 def expected_seconds(settings: dict) -> float | None:

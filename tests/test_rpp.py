@@ -41,6 +41,16 @@ def test_render_settings():
     assert s["file"] == "V:\\\\renders\\\\take.wav"
 
 
+def test_media_files():
+    text = PROJECT.replace(
+        '    NAME "guitar"\n',
+        '    NAME "guitar"\n    <ITEM\n      <SOURCE WAVE\n        FILE "V:\\takes\\a.wav" 1\n      >\n    >\n'
+        '    <ITEM\n      <SOURCE WAVE\n        FILE "fontes\\b.wav"\n      >\n    >\n',
+    )
+    # RENDER_FILE is a render setting, not a media file
+    assert rpp.media_files(text) == ["V:\\takes\\a.wav", "fontes\\b.wav"]
+
+
 def test_plugins():
     assert rpp.plugins(PROJECT) == [
         {"type": "VST", "name": "VST3i: Kontakt 8 (Native Instruments) (64 out)", "file": "Kontakt 8 Portable.vst3"},
