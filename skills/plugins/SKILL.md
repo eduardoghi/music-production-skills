@@ -23,7 +23,8 @@ Read only the file of the plugin in use:
 | EZdrummer 3 | `plugins/ezdrummer-3.md` | Note map measured, and its menus need the host in front |
 | EZbass | `plugins/ezbass.md` | sounds an octave under the note written, keyswitch map, slides at a fixed speed, overlaps play legato, FL can load an old VST2 build |
 | Evolution (Orange Tree) | `plugins/evolution.md` | Overlapping notes a tone apart become legato, unless each string gets its own MIDI channel |
-| Kontakt 8 | `plugins/kontakt.md` | Its state bytes change on every read, so compare states by render |
+| Kontakt 8 | `plugins/kontakt.md` | Its state bytes change on every read, so compare states by render, and its menu rows move once an instrument is loaded |
+| EXHALE (Output) | `plugins/exhale.md` | Presets load as snapshots through Kontakt's Load dialog, and only its Notes presets sustain a pitch |
 | Guitar Rig 7 | `plugins/guitar-rig-7.md` | Exposes its components only after a preset loads, which takes a real double click |
 | Archetype Cory Wong X | `plugins/archetype-cory-wong-x.md` | Its default amp and cabinet scoop the mids while the centroid looks right |
 | PRISM (Aurally Sound) | `plugins/prism.md` | Every window shows one shared ARA document, so pick the track first |

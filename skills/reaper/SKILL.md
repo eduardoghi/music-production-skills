@@ -208,7 +208,8 @@ Deferred scripts kept running while a plugin or REAPER showed a modal dialog, so
 
 ## Known limits
 
-- No host API loads a Kontakt `.nki` or snapshot. Load it once through the interface and keep the state.
+- No host API loads a Kontakt `.nki` or snapshot. Load it once through Kontakt's Load dialog (`plugins/kontakt.md` in
+  the `plugins` skill) and keep the state.
 - The scripting API has no ARA access, so Melodyne and SpectraLayers are tools for a person working in REAPER, and
   their results come back as exported files.
 - Projects are built through the API. Writing `.rpp` text from a template was measured and not adopted

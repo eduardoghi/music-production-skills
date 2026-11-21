@@ -69,6 +69,24 @@ Observed in REAPER 7.86, with Evolution Indie Rock loaded:
 - The parameter text appeared 1 to 6 s after a restore, but in some fresh instances it stayed empty although the
   instrument had loaded. Don't wait on the text alone. Accept a stable text, or a state whose length stayed the same
   after about 10 s.
+- **A snapshot into an empty instance.** The Load dialog took a `.nksn` path in an instance with no instrument, and it
+  loaded the library's instrument with that snapshot. Eight snapshots of one library loaded this way, each confirmed
+  by capturing the instrument header and reading its name. In FL the same dialog had replaced the settings of an
+  instrument already in the rack.
+- **The menu changes with what is loaded.** With an instrument loaded, the KONTAKT menu gains `Save as` near the top,
+  and every row below it moves down. A real click aimed at `Reset multi` by the position it had in an empty instance
+  landed between `Save as default multi` and the separator under it. `Save as default multi` changes what every new
+  instance opens with, so after such a slip check the default multi file (`kontakt_def.nkm` in the user data folder)
+  for a new date or size. It was unchanged that time. `Reset multi`, clicked at its own row, had no visible effect,
+  and that wasn't investigated.
+- **Don't click by remembered positions.** Qt draws the menu, so its text can't be read through window messages.
+  Capture the open menu and check the row under the point before each real click. Keeping the instance in one known
+  state also helps, and a new empty instance for each load kept the menu the same every time.
+- **One plugin window at a time.** A second Kontakt window left open at the same place on screen took the clicks meant
+  for the new one. Close the other plugin windows first. Hiding and showing a plugin window (`fx.show`) gives it a new
+  handle, so find the window again after reopening it.
+- A state read after such a load and written into a new instance in another project (`fx.restore_fresh`) rendered the
+  expected notes, judged by their pitch classes. Its bytes differed from the stored ones, as with any Kontakt state.
 - A REAPER process that quit right after rendering with Kontakt loaded, even with no instrument in it, ended with
   code 0xC000000D, although the files were complete. Waiting 3 s before quitting avoided it, which `mps render` does.
   Other instruments and effects tested didn't cause it (`docs/render-standard.md`).
