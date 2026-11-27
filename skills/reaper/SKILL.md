@@ -109,6 +109,16 @@ type prefix, such as `VST3:Kontakt 8` or `JS:`. `format` is `wav16`, `wav24` or 
   bit for bit except the default fades at the item edges.
 - When the first downbeat falls after 0, a short first measure (a 1/4 measure at the tempo that fills the gap) puts
   the music's bar 1 on a measure line without moving the audio. The music's bar N is then measure N+1.
+- **Precision.** Two maps built from the same beat grid can still place a note at slightly different times.
+  - In one song, a project's map was written with times and tempos rounded to 4 decimals (71.2335 instead of
+    71.23352…). The parts had been rendered under the map of a MIDI file, which holds integer microseconds per quarter.
+  - The same quarter-note positions drifted apart steadily, to 112 µs (5.4 samples at 48 kHz) after 170 s.
+  - Level and band energy stayed the same, but a noise-like part (a shaken tambourine) decorrelated, from 0.59 to 0.06
+    along the song, since a shift of one or two samples is enough at those frequencies.
+  - The same instrument and MIDI under the MIDI file's map repeated the earlier render sample by sample.
+  - When renders of the same MIDI must match sample by sample, build every project from the same map without
+    rounding, and keep the map that the approved renders used. Replacing a map after audio items are placed stretches
+    them (above).
 
 ## Volume automation
 
@@ -148,7 +158,9 @@ Once parts are approved, a checkpoint project keeps them safe and editable at on
 - The approved renders play, and each part's editable source (instrument, MIDI, automation) sits beside them, muted.
 - The renders carry no automation of their own, so nothing is applied twice when the mix adds envelopes later.
 - Check the approved tracks against their offline sum with the same gains (one checkpoint matched at −152 dB), and
-  each source against its render, within that instrument's spread between renders.
+  each source against its render, within that instrument's spread between renders. Sources that sit under another
+  tempo map than the one their renders used can match in level and spectrum but not sample by sample (see Tempo
+  maps). Render each source alone as well, since a shared render needs a longer load delay (see Rendering).
 - Name the media after what they are and keep a note of where each render came from. When the project is archived,
   these are the files it needs (see the `project-archive` skill).
 
@@ -220,6 +232,13 @@ mps render project.rpp --expect out.wav --samplerate 44100 --channels 2 --subtyp
 - Repeated renders of the same project can differ, from round robin samples or modulation (ValhallaVintageVerb with
   its default modulation never rendered the same twice). Before reading a difference between two versions as a
   change, render each a few times and judge them with `mps wav variation`, or turn the modulation off while comparing.
+- **Load delay with several instruments.** In one project with six EZdrummer 3 instances, `fx_delay` 10 wasn't
+  enough.
+  - The last instance stayed silent for the first 60 s of the song.
+  - Other instances started with some samples missing, which left up to −0.4 dB less energy at 2 to 4 kHz.
+  - With 40 s, each part matched its single-instance render within 0.01 dB of loudness per section.
+  - 40 s is what that project and machine needed, not a general value. Check a render of several instruments against
+    single-instance renders of the same parts, the start of the song first, before trusting it.
 
 ## Plugin windows
 
