@@ -45,6 +45,9 @@ skill explains, and the FL Studio bridge has its own setup in `fl-studio/bridge/
   and parameter names, each marked with the host it was measured in.
 - `skills/music-composition`: develop a musical idea through intentional changes, compared by listening instead of
   by adding layers, and compose the relationships between instrumental parts instead of independent patterns.
+- `skills/project-archive`: archive a paused or finished project, keeping what reopens it and proving the copy works
+  (media made relative, every file hashed, archived projects rendered and compared with the originals) before the
+  work copy is deleted.
 - `skills/fl-studio-scripting`: what scripts can and can't do inside FL Studio 2026, as observed on 26.1.4,
   including its file restrictions, callbacks and how to drive the interface from outside, with or without focus.
 

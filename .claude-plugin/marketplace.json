@@ -9,7 +9,7 @@
         {
             "name": "music-production-skills",
             "source": "./",
-            "description": "REAPER through a bridge and command line, audio verification, music composition, plugin notes and FL Studio scripting"
+            "description": "REAPER through a bridge and command line, audio verification, music composition, plugin notes, project archiving and FL Studio scripting"
         }
     ]
 }
