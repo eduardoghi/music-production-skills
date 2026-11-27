@@ -101,6 +101,15 @@ type prefix, such as `VST3:Kontakt 8` or `JS:`. `format` is `wav16`, `wav24` or 
 - When the song's first downbeat isn't at 0 (it was at 0.62 s in one project), REAPER's bar grid is offset from the
   music, and MIDI imported at the project start lands that much early. Say the offset next to any exported `.mid`.
 
+## Tempo maps
+
+- Audio items follow beats by default. In one build, a tempo map set after the items stretched them (`PLAYRATE
+  1.0059`, pitch kept), and the render no longer matched the source. Set the tempo map before adding audio, then
+  render the project and compare it with the source files. With the map first, the render matched the source
+  bit for bit except the default fades at the item edges.
+- When the first downbeat falls after 0, a short first measure (a 1/4 measure at the tempo that fills the gap) puts
+  the music's bar 1 on a measure line without moving the audio. The music's bar N is then measure N+1.
+
 ## Volume automation
 
 - **Ramps.** How a volume envelope moves between two points depends on its scaling mode (`GetEnvelopeScalingMode`,
