@@ -59,6 +59,7 @@ Every call prints JSON and exits with a code that says what happened.
 | `project.close_tab` | `path` | closes the tabs holding that file, refusing one with unsaved changes |
 | `project.info` | | tempo, sample rate, markers and regions, and tracks with their items, effects, sends, folder depth, color and channel count |
 | `project.set_tempo` | `bpm`, `srate` (optional) | the values read back |
+| `project.set_tempo_map` | `markers`, each with `time` and `bpm`, and optionally `num` with `den` (a time signature, which starts a new measure) and `linear` | replaces every tempo and time signature marker, then reads them back with their measure and beat |
 | `track.add` | `name`, `index` (optional) | the track with its GUID |
 | `track.set` | `track`, and any of `volume_db`, `pan` (-1 to 1), `mute`, `name`, `folder_depth` (REAPER's I_FOLDERDEPTH, 1 opens a folder, -n closes n levels), `main_send` (off for a track that must not reach its parent or the master), `channels` (even, 2 to 128), `color` ([r, g, b] or false) | the track read back, with `volume_db` |
 | `track.move` | `track`, `index` (counted before the move) | the track at its new place |

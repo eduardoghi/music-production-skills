@@ -18,7 +18,7 @@
 
 if os.getenv("MPS_ROLE") == "render" then return end
 
-local VERSION = "0.2.10"
+local VERSION = "0.2.11"
 local FAULTS = os.getenv("MPS_BRIDGE_FAULTS") == "1"
 
 -- launching the script again ends the running copy and starts the new one, instead of asking in a dialog
@@ -396,6 +396,40 @@ COMMANDS["project.set_tempo"] = { mutates = true, run = function(a)
   end
   local got = reaper.GetProjectTimeSignature2(0)
   return { bpm = got, srate = reaper.GetSetProjectInfo(0, "PROJECT_SRATE", 0, false) }
+end }
+
+-- replaces every tempo and time signature marker with the given ones, each {time, bpm, num, den, linear}, where num
+-- and den set a time signature (REAPER starts a new measure there) and linear ramps the tempo to the next marker
+COMMANDS["project.set_tempo_map"] = { mutates = true, run = function(a)
+  local markers = need(a, "markers", "table")
+  if #markers == 0 then error("bad_args: 'markers' must be a non-empty array") end
+  local last = -1
+  for i, m in ipairs(markers) do
+    if type(m) ~= "table" or type(m.time) ~= "number" or type(m.bpm) ~= "number" then
+      error("bad_args: marker " .. i .. " needs numbers 'time' and 'bpm'")
+    end
+    if m.bpm <= 0 or m.time < 0 or m.time <= last then
+      error("bad_args: marker " .. i .. " needs bpm > 0 and a time after the previous marker")
+    end
+    if (opt(m, "num", "number") == nil) ~= (opt(m, "den", "number") == nil) then
+      error("bad_args: marker " .. i .. " needs both 'num' and 'den' or neither")
+    end
+    last = m.time
+  end
+  for i = reaper.CountTempoTimeSigMarkers(0) - 1, 0, -1 do reaper.DeleteTempoTimeSigMarker(0, i) end
+  for i, m in ipairs(markers) do
+    local num, den = opt(m, "num", "number") or 0, opt(m, "den", "number") or 0
+    if not reaper.SetTempoTimeSigMarker(0, -1, m.time, -1, -1, m.bpm, num, den, opt(m, "linear", "boolean") == true) then
+      error("failed: SetTempoTimeSigMarker for marker " .. i)
+    end
+  end
+  reaper.UpdateTimeline()
+  local out = json.array({})
+  for i = 0, reaper.CountTempoTimeSigMarkers(0) - 1 do
+    local _, time, measure, beat, bpm, num, den, linear = reaper.GetTempoTimeSigMarker(0, i)
+    out[#out + 1] = { time = time, measure = measure, beat = beat, bpm = bpm, num = num, den = den, linear = linear }
+  end
+  return { markers = out }
 end }
 
 COMMANDS["track.add"] = { mutates = true, run = function(a)
