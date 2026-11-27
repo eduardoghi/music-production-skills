@@ -37,6 +37,9 @@ on these bits in another version.
 Names don't say how a preset sounds. What worked was to render each candidate alone on the same notes and compare
 measures of the renders, without treating any value as a standard:
 
+- **Pitch per note.** Track each rendered note's pitch (torchcrepe worked) and compare it with the note written. A
+  Notes preset can play another note on every key. One was 794 cents off on all of them, and two stab presets drifted
+  by about 300 cents.
 - **Harmony.** Chroma energy in pitch classes outside the song's scale. Some presets stack fifths on each note, which
   stays inside a major scale, so counting every class other than the ones played overstates the problem.
 - **Motion.** The variation of the level inside each note, after its attack, and the strongest amplitude modulation

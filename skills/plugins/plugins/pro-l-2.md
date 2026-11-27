@@ -25,4 +25,12 @@ Observed in REAPER 7.86, VST3, set through `fx.set_param` by the text each param
   oversampled samples.
 - **The fix.** A copy limited to −1.2 dBTP, with the gain raised 0.2 dB to keep the loudness, decoded at −1.16 dBTP. So
   decode the MP3 and measure its true peak before calling it within the ceiling, and keep the lossless master at its
-  own ceiling.
+  own ceiling. A second master made the same way decoded at −1.07 dBTP, so the margin varies with the music.
+
+## Judging its gain reduction offline
+
+The meter isn't readable through the host. Compare the render with the pre-master times the effective gain (the Gain
+minus the drop from Output Level), in 5 ms windows, after checking that the delay between them is 0 (REAPER compensates
+the lookahead). Report the maximum reduction, the share of time above 1 dB, where it acts, the median change on kick and
+snare hits, and the LRA and PLR. Transparent at 4x with the gain set for −17.3 LUFS on one mix reduced at most 2.6 dB,
+more than 1 dB in 0.07 % of the time, and left the hits unchanged (−0.01 dB).

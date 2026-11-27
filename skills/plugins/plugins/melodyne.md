@@ -48,3 +48,12 @@ export the detected notes of a separated bass stem as MIDI with no editing.
   envelope-based segmenter, it kept 86, so its note count came out at about half.
 - The notes it did start were almost all real attacks (95 % within 50 ms of an attack from the audio), and their
   pitches agreed with three pitch trackers on 121 of 126.
+
+## What the Polyphonic algorithm gave on a guitar
+
+- Run on a whole guitar stem, it put into the main part pitches that, in the recording, belonged to a background
+  texture.
+- The velocities it exports are its estimate of each note's amplitude, not how hard the note was played (16 to 125
+  here). Weak high notes can be harmonics read as notes, and they sound faint when rendered.
+- It led the automatic transcribers on piano-roll correlation, yet rebuilds from it were rejected by ear (see
+  `references/transcription.md` in the audio-verification skill).

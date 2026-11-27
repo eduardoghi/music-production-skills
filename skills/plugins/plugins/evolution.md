@@ -15,7 +15,9 @@ string each, needs that kind of voicing or a smaller range.
 
 - The range is reachable through the bridge as `Range Up` and `Range Dn` (2 ST by default). Each name appears twice,
   for the legato range and for the separate slide range, so `fl_plugin_set` by name can't tell them apart. That is a
-  limit of setting parameters by name in the bridge.
+  limit of setting parameters by name in the bridge. Observed in REAPER. Setting `Range Up` and `Range Dn` to 0
+  through the host left a render with overlapping pairs identical, so legato wasn't turned off. Which of the two
+  same-named pairs was set wasn't recorded. Strings per MIDI channel (below) keep legato apart by channel instead.
 - Manual. The engine keeps legato apart per MIDI channel, and a channel-based string mode picks the string from the
   channel. The FL bridge writes no MIDI channel per note, so neither is available from FL's piano roll script. REAPER
   writes a channel per note, see Strings by MIDI channel.
@@ -42,6 +44,9 @@ Observed on Indie Rock with no snapshot loaded, notes 54, 61, 66 and 73, three h
 - Against one clean, reverberant rock guitar stem, Indie Rock's band profile matched within about 1 dB from 150 Hz
   to 4 kHz with no snapshot, while Evolution Strawberry sat 6 dB higher from 1 to 2 kHz and 5 dB lower from 150 to
   300 Hz. Comparing libraries this way, on the same notes, picks one before any mixing.
+- Observed with Hollowbody Blues. Much of the pitch wobble in a dry render comes from the takes of `Tracks`. Humanize at
+  4 % with variance at 10 % brought it from 2.4 to 0.4 cents, and lower settings were no steadier. The library exposes
+  no pickup tone control apart from the blend between its two pickups (100 % neck was used).
 
 ## Signal and tone chain
 

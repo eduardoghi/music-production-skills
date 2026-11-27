@@ -39,3 +39,11 @@ On a separated bass stem of two minutes with mostly repeated eighth notes:
   the attacks within 50 ms).
 - It read 13 notes a semitone low (F2 and G2 where three pitch trackers, Melodyne and the EZbass tracker all read F#2
   and G#2). Check its pitches against another tracker before using them.
+
+## What it gave on a polyphonic guitar
+
+- The `guitar dist` model, run on the whole separated guitar stem and used with no correction, was the first
+  transcription a listener accepted as the part (see `references/transcription.md` in the audio-verification skill).
+- It followed the reference's pitches better than `general` in most sections (chroma 0.89 against 0.86 in one, 0.92
+  against 0.87 in another, a tie in two), but it plays some notes an octave below the recording, which leaves a gap
+  in the upper midrange that EQ can't fill.
