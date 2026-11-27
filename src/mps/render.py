@@ -206,7 +206,9 @@ def render_project(
     # imported here because it loads Windows libraries, while the rest of the package also runs on Linux in CI
     from mps import windows
 
-    project = Path(project)
+    # absolute, because the render record is written next to the project by a REAPER process that works from another
+    # folder, so a relative path left the record where this process didn't look
+    project = Path(project).resolve()
     if not project.is_file():
         return {"ok": False, "error": f"project not found: {project}"}
     if mode == "script":

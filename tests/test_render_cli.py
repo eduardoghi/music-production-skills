@@ -3,9 +3,13 @@
 import json
 import os
 import stat
+import sys
+import types
+from pathlib import Path
 
 import pytest
 
+import mps
 from mps import audio, cli, render
 
 STANDARD_RPP = """<REAPER_PROJECT 0.1 "7.86/x64" 1794772900
@@ -50,6 +54,39 @@ def fake_render(monkeypatch, tmp_path):
 
 def result(capsys):
     return json.loads(capsys.readouterr().out)
+
+
+def test_a_relative_project_path_still_finds_the_render_record(monkeypatch, tmp_path):
+    work, elsewhere = tmp_path / "work", tmp_path / "elsewhere"
+    work.mkdir()
+    elsewhere.mkdir()
+    (work / "p.rpp").write_text("<REAPER_PROJECT 0.1\n>\n", encoding="utf-8")
+    sent = {}
+
+    class FakeProcess:
+        pid, returncode = 1, 0
+
+        def __init__(self, cmd, env):
+            sent["env"] = env
+            log = Path(env["MPS_RENDER_LOG"])
+            # the REAPER process works from another folder, so a relative path lands there
+            target = log if log.is_absolute() else elsewhere / log
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(json.dumps({"tempo": 90.0, "qn_seconds": 0.6666666667}), encoding="utf-8")
+
+        def poll(self):
+            return 0
+
+    fake_windows = types.ModuleType("mps.windows")
+    fake_windows.dialogs = lambda pid=None: []
+    monkeypatch.setitem(sys.modules, "mps.windows", fake_windows)
+    monkeypatch.setattr(mps, "windows", fake_windows, raising=False)
+    monkeypatch.setattr(render.subprocess, "Popen", lambda cmd, env: FakeProcess(cmd, env))
+    monkeypatch.setattr(render, "reaper_exe", lambda: Path("reaper.exe"))
+    monkeypatch.chdir(tmp_path)
+    res = render.render_project(Path("work") / "p.rpp", timeout=5)
+    assert Path(sent["env"]["MPS_RENDER_LOG"]).is_absolute()
+    assert res["seen"] == {"tempo": 90.0, "qn_seconds": 0.6666666667}
 
 
 def test_normal_exit_with_good_files_is_ok(fake_render, capsys):
