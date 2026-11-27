@@ -1,7 +1,7 @@
 {
     "name": "music-production-skills",
     "description": "Skills for producing, rebuilding and checking music with Claude Code, covering REAPER through a bridge and command line, audio verification, music composition, plugin notes, project archiving and the FL Studio tools kept for older projects.",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "author": {
         "name": "Eduardo Hillesheim"
     },
