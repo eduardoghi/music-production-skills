@@ -92,6 +92,13 @@ type prefix, such as `VST3:Kontakt 8` or `JS:`. `format` is `wav16`, `wav24` or 
   Expect a time to read back within half a tick.
 - A channel per note is what lets an instrument pick a string per channel, as Evolution's Channel-Based Strings does
   (see the `plugins` skill).
+- Rounding durations can leave a note ending one or two ticks after the same pitch starts again on its channel. It
+  happened on 18 notes of one generated part and on 32 and 48 in raw transcriber output. End each note at the next
+  start of the same pitch on the same channel, and make the script fail if an overlap is left.
+- A keyswitch placed before the render start is lost, so the first note renders without its articulation. Start the
+  render before the first keyswitch, or repeat the keyswitch inside the range.
+- When the song's first downbeat isn't at 0 (it was at 0.62 s in one project), REAPER's bar grid is offset from the
+  music, and MIDI imported at the project start lands that much early. Say the offset next to any exported `.mid`.
 
 ## Volume automation
 
@@ -101,6 +108,8 @@ type prefix, such as `VST3:Kontakt 8` or `JS:`. `format` is `wav16`, `wav24` or 
   For a ramp that had to match a dB-linear curve computed offline, a point every 10 ms along it worked. Renders
   matched those curves to −83 dB of residual, at worst −84 dBFS in a single sample. That spacing was validated in that
   project, not compared with others, so treat it as a working value rather than a requirement.
+- **Section changes.** Ramps linear in dB that end 20 ms before the downbeat let the new section's attack land at its
+  new level. An eighth note worked for a percussive part and one beat for a sustained pad.
 - **Folders.** A folder track's pre-FX volume envelope (`volume_prefx`) scales the sum of its children, return tracks
   inside the folder included, before the folder's own effects. It leaves an existing post-FX envelope alone, and the
   two multiply. A constant gain before linear effects such as EQ equals the same gain after them. A gain that moves
@@ -120,6 +129,18 @@ type prefix, such as `VST3:Kontakt 8` or `JS:`. `format` is `wav16`, `wav24` or 
 - **A separate crash.** In the same session, one render process ended with exit code 0xC00000FD, which is
   `STATUS_STACK_OVERFLOW`, not a lack of memory. Its cause wasn't investigated. The same render succeeded after the
   instance was restarted, but that doesn't show the memory caused it.
+- **Opening a heavy project.** REAPER stays busy for a few seconds, and the bridge's heartbeat looks stalled meanwhile.
+  Wait for it before reading the instance as dead.
+
+## Consolidating approved parts
+
+Once parts are approved, a checkpoint project keeps them safe and editable at once.
+- The approved renders play, and each part's editable source (instrument, MIDI, automation) sits beside them, muted.
+- The renders carry no automation of their own, so nothing is applied twice when the mix adds envelopes later.
+- Check the approved tracks against their offline sum with the same gains (one checkpoint matched at −152 dB), and
+  each source against its render, within that instrument's spread between renders.
+- Name the media after what they are and keep a note of where each render came from. When the project is archived,
+  these are the files it needs (see the `project-archive` skill).
 
 ## Plugin state
 
