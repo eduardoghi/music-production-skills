@@ -137,6 +137,9 @@ functions and nothing that adds, moves or reads clips.
 and RMS. With FL already open the same command exits with code 0 and writes nothing, so check that the file exists.
 No script call to load a plugin or render audio turned up, so plugin slots go through the interface.
 
+Reading a project file from outside FL didn't work either. PyFLP couldn't read projects saved by FL Studio 2026, so
+it was dropped, and the project's state was read through the running FL instead.
+
 ## Working without focus
 
 FL can stay behind other windows while it is driven, so the person can keep typing elsewhere. Messages posted to its
