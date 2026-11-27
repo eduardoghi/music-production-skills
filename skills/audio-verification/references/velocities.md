@@ -1,6 +1,7 @@
 # Velocities from a reference
 
-Read this when the dynamics of a recorded part have to be copied onto a virtual instrument.
+Read this when the dynamics of a recorded part have to be copied onto a virtual instrument. The values below come
+from the instruments and parts where they were measured, as examples, not settings to reuse.
 
 To copy the dynamics of a recorded part onto a virtual instrument, measure how the instrument answers velocity
 instead of assuming a straight line, then map the reference's relative levels through that curve.

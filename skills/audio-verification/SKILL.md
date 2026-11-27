@@ -115,6 +115,12 @@ counts its level.
 
 Change one thing per render.
 
+Close a round once the listener approves a version musically. Don't go on generating alternatives to improve a
+metric, unless there is a concrete audible problem, heard by the listener or found by a measurement and then
+confirmed by ear. Metrics that rank candidates can miss what the listener judges (see Polyphonic parts in
+`references/transcription.md`), and differences inside the spread between renders decide nothing (below). A new round
+starts from the problem it addresses, a hypothesis for its cause, and a small, fixed number of candidates.
+
 Two renders of the same project don't always match. Sampled instruments rotate samples (round robin), and modulated
 effects start at a different phase each time. In one rebuild no two of four renders of a guitar part matched, with
 residuals up to -3 to -5 dB between repeats, and a reverb with its default modulation never rendered the same twice.
@@ -146,7 +152,9 @@ render matched its offline sum only to −14 dB of residual (modulated reverbs a
 them matched to −83 dB, at worst −84 dBFS in a single sample. That agreement confirmed every envelope point by point.
 Two more checks for a change made by automation:
 - energy above 4 kHz within ±50 ms of every automation point against the control, for clicks (it rose at most 0.06 dB);
-- bars outside the change against the control, which should be bit-identical when nothing modulated plays there.
+- bars outside the change against the control. In one round the bars before the change came out bit-identical to it.
+  A render that includes modulated effects never does, so judge it against the spread between renders, and
+  call a small residual negligible rather than identical (a dry guitar part matched to −111 dBFS).
 
 Read the delivered files back before handing them over.
 - **WAV with dither.** A 24-bit file with TPDF dither added once should read back equal to the quantized samples, with

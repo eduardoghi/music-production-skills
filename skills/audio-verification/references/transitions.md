@@ -1,7 +1,7 @@
 # Transition continuity audit
 
 Read this when a passage between sections sounds broken, or before the final export of a piece with several
-sections.
+sections. Any numbers here are examples from the pieces where they were checked, not thresholds.
 
 When a passage between sections sounds broken, read the notes of every channel on both sides of the boundary
 (`midi.read` through the `reaper` skill, `fl-notes read` in FL, or the score a generator wrote) before touching anything. Run a light pass over the main

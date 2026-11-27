@@ -4,7 +4,35 @@ Read this when separated stems are used as a target, to judge what a residual st
 parts with the original's stems.
 
 A separator's stems are a guess about the instrumentation, and a processed instrument can be split across several.
-These checks come from one mix with a stereo processed guitar, a residual "other" stem and vocals.
+These checks come from one mix with a stereo processed guitar, a residual "other" stem and vocals. Their numbers are
+what that mix gave, as examples of what to measure, not thresholds.
+
+## Stems from the source platform against local separations
+
+A generator can export its own stems (a lead vocal and the rest, or one stem per instrument). They may come from a
+separate render or a different generation of the song, so check them before treating them as the parts. Run the
+same checks on the local separations, and keep the two sets apart in every file name.
+1. **Inventory.** Format, sample rate, length and channel count of each stem, against the full mix delivered with
+   them.
+2. **Alignment.** Find each stem's offset against the mix by correlation, then in windows along the song, since an
+   offset can drift (see "Placing the take" in `vocal-takes.md`). Stems exported together share one offset, so
+   measure it on their sum.
+3. **Gain and sum.** Fit one gain per stem to the mix, then measure the residual of the mix minus the sum. A residual
+   near the render-to-render level says the stems add up to the mix. A large one says they come from another render,
+   or carry processing the mix doesn't, and their levels can't be read as the mix's.
+4. **Leakage.** In each stem, measure the level where its instrument rests, and check whether its attacks fall on
+   another stem's attacks more often than chance (see the extra attacks and doubling checks below).
+5. **Artifacts.** Listen to and measure the parts each stem should leave empty, and the band above about 8 kHz, where
+   separation noise gathered in one set of layers. Compare the same passage in the local separation.
+6. **Musical content.** Compare the chroma and the attacks of each stem with the mix in the same windows. A stem that
+   loses notes, smears attacks or adds pitches isn't a faithful target for a transcription.
+7. **Instruments in the wrong stem.** A part can land in another instrument's stem or be split across several (a pad
+   inside the guitar stem, a doubling layer in a "piano" stem, below). Locate it with the attack and chroma tests
+   before naming what a stem holds, and calibrate on a rebuild whose parts are known where one exists.
+8. **Decision.** Record, per stem and per section, which source serves as the target and why. Neither set is the
+   truth, and the choice can differ by section.
+
+## What separated stems showed
 
 - Compare the same stem across separators. Two estimates of the guitar agreed to 8 to 19 dB (SDR between them), while
   the two "other" stems agreed to about 0 dB, which means each separator put something different there. The sum of

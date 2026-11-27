@@ -1,7 +1,7 @@
 # Re-attacks, sustained notes and strings
 
 Read this when a transcription may be missing re-attacks of notes already sounding, or when the guitar string that
-played a note matters.
+played a note matters. The numbers come from one guitar part and its renders, as examples, not thresholds.
 
 A transcription that gives almost every note the same length, from one attack to the next, may be cutting sustained
 notes at each attack and missing re-attacks of notes already sounding. In one guitar part, 35 of 110 transcribed notes
