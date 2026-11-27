@@ -130,17 +130,35 @@ When a listening file is a sum of parts made offline, check that it equals the d
 on the lossless files before any MP3. Give every candidate the same accompaniment, ideally the same audio files
 rather than new renders, so round robin and modulation in the accompaniment don't differ between candidates.
 
+Packages for blind listening that worked, round after round:
+- letters assigned at random, with the mapping in a separate folder to open only after listening;
+- pairs that differ by exactly one change, in random order;
+- the candidates in context, with the other parts at the reference stems' levels, and isolated parts at the gain they
+  have in that context;
+- a common gain of about −6 dB, so sums with bass and drums don't clip, and a mono folder at the same gain;
+- checks outside the focus bars (neighbouring bars, the climax), FLAC 24-bit for excerpts and MP3 320 for the full song;
+- for masters, one set at real loudness and one leveled.
+
 To confirm automation or routing in a mix with modulated effects, also render a copy with the modulated sends muted.
 What's left plays the same every time and should match the offline sum of the same parts with the same curves within
 a small numerical tolerance, which is worth measuring and reporting. It won't be bit-identical. In one mix the full
 render matched its offline sum only to −14 dB of residual (modulated reverbs and a delay), while the copy without
 them matched to −83 dB, at worst −84 dBFS in a single sample. That agreement confirmed every envelope point by point.
+Two more checks for a change made by automation:
+- energy above 4 kHz within ±50 ms of every automation point against the control, for clicks (it rose at most 0.06 dB);
+- bars outside the change against the control, which should be bit-identical when nothing modulated plays there.
 
 Read the delivered files back before handing them over.
 - **WAV with dither.** A 24-bit file with TPDF dither added once should read back equal to the quantized samples, with
   a residual near −144 dBFS against the float master.
 - **MP3.** Decode it and measure its true peak at 8x oversampling, since the encoding can pass the master's ceiling.
   One MP3 made from a −1 dBTP master decoded at −0.975 dBTP (see Pro-L 2 in the `plugins` skill).
+- **Another sample rate.** When the delivery rate differs from the project's, convert once, on the 32-bit float
+  pre-master and before the true-peak limiter, so the ceiling holds at the delivered rate. A 44.1 to 48 kHz conversion
+  with soxr at VHQ kept loudness and true peak within 0.01 dB. Keep A/B comparisons at the source rate.
+- **Which pre-master.** Master the exact render the listener approved rather than a new one, since two renders of a
+  mix with modulated effects differ (true peak moved 0.2 to 0.25 dB). When a version adds layers to an approved one,
+  the same limiter settings and input gain leave the layers as the only difference between the masters.
 
 Integrated loudness needs at least one 400 ms block, so a shorter window reads as silence. Two such windows then
 compare as 0 LU apart, which looks like a real level. One vocal phrase of 0.37 s read 0 LU against the accompaniment
@@ -183,10 +201,17 @@ compare part levels above the sub when the parts differ there, and calibrate the
 parts are known (here the stem read within 0.35 dB of the true drums). The same applies to band shares normalized to
 the total. A sub cut raises every other band's share, so read absolute bands with one reference gain instead.
 
+Whole-mix measures can't tell apart versions of a layer that sits far below the mix. Layers 17 to 52 dB under the mix
+left band error, width, mono loss and section loudness identical to the hundredth across pad EQ variants, and an
+octave layer's error against the mix read 1.365 to 1.366 dB for every version. Measure such a layer rendered alone,
+against its own target, and give an isolated copy raised by a known gain (20 dB worked) for listening.
+
 ### Tone apart from playing
 
 To work on an instrument's sound without mixing in changes to the part, keep the MIDI fixed and change one link of the
-chain per render. Measure at the reference's own attack times, since the render plays the same notes:
+chain per render. For effect chains, render the DI once and pass that audio through each candidate chain (re-amping),
+so the playing and the sampler's round robin are identical and only the chain differs. Measure at the reference's own
+attack times, since the render plays the same notes:
 
 - how far the attack rises above the sustain right after it, broadband and above 2 kHz, where the pick sits
 - how far the sound falls between one attack and the next
@@ -215,6 +240,19 @@ What one guitar showed, as things to check rather than rules:
   while shorter notes moved it about 2 dB/s and the amp envelope about 3. On an electric piano, neither the effects
   nor the note lengths moved the decay inside a note beyond the spread between renders (4.4 dB/s on that preset).
   There the effects made only the tail after the last note, so measure that spread before ranking the changes.
+- To compare instruments rather than their EQ, match each candidate's mean spectrum to the target with a diagnostic
+  EQ and measure only what remains (sustain, attack, polyphony). With the spectra matched, the instrument mattered
+  more than the amp chain, and one guitar library led another on piano-roll correlation (0.78 to 0.79 against 0.71)
+  whatever chain followed. The diagnostic fit (eight bells, ±18 dB, with a penalty on the gains) is for measuring
+  only. As the EQ of a delivered chain, an automatic fit with nine bells cut too much low end and gave way to a gentle
+  four-band EQ.
+- Beyond the band profile, the attack's rise time (the reference took 28 to 35 ms, early rebuilds 7 to 16 ms) and the
+  pitch wobble in cents (1.3 to 1.7 in the reference, 3 to 4 once chorus was added) separated versions that looked
+  alike. The wobble measure is noisy on polyphonic parts with tails.
+- For a doubler, chorus or wide reverb, measure the comb filter in the mono sum, as the standard deviation of the fine
+  difference (2.7 Hz resolution) between the spectra of the mono sum and the dry version from 100 Hz to 5 kHz, after
+  removing the broad trend. Of the spatial chains compared on one guitar, a doubler left left and right nearly
+  uncorrelated, lost about as much level in mono as the reference stem, and gave the strongest comb.
 
 ## Limits
 

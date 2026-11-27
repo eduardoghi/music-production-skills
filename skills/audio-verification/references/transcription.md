@@ -11,6 +11,11 @@ ear. Agreement between tools raises confidence but doesn't confirm a note, since
 The points below come from transcribing one bass line from a separated stem. Treat the numbers as an example of
 what to check, not as thresholds for another recording.
 
+- Measure the reference's tuning against A440 before reading pitches or tuning a take to it. One recording sat about
+  5 cents sharp, which was too little to move any note to another semitone.
+- A reference file can end in a cut instead of a fade. One ended with a jump of 0.018 in its last sample, and the drum
+  transcription had a tom exactly there, most likely the cut read as a hit. Check events in the last moments against
+  the file's end.
 - Onset detectors that normalize by the maximum, as librosa's `onset_detect` does by default, lose a quiet stem to
   one click. A separated stem had one at the first downbeat, 40 times its 99th percentile, and only 6 attacks were
   left in two minutes. Normalize by a high percentile and clip instead.
@@ -72,7 +77,8 @@ what to check, not as thresholds for another recording.
   same, for example after notes were added or removed earlier. Compare two renders on a stretch whose notes are
   identical to learn that noise floor before reading per-event or per-bar differences. On one bass it reached 1 to 2
   dB per event.
-- Commercial transcribers are a check, not a source of truth. On that bass, none added a note the segmentation had
+- On a monophonic line, commercial transcribers were a check, not a source of truth. On a polyphonic guitar one of
+  them became the approved base (see "Polyphonic parts"). On that bass, none added a note the segmentation had
   missed. Melodyne Melodic and the EZbass Audio Tracker joined repeated notes into long ones, and PRISM read 13 notes
   a semitone low. Count matched attacks, pitches on the matched notes and repeats kept, and render every candidate on
   the same instrument before judging by ear (`plugins/melodyne.md`, `plugins/ezbass.md` and `plugins/prism.md` in
@@ -92,6 +98,13 @@ what to check, not as thresholds for another recording.
 
 These come from one guitar part with heavy stereo processing, again as examples of what to check.
 
+- Get the listener's verdict on the phrase before refining anything else. Ten rebuilds assembled from Melodyne's
+  polyphonic detection and a consensus of several tools, ranked by piano-roll correlation, chroma and band error after
+  matching the EQ, were all rejected by ear as notes picked at random. Melodyne had led on piano-roll correlation, ahead of Basic Pitch
+  (0.725), the Riley models (0.64) and YourMT3 (0.53 to 0.59), rendered on the same guitar. Guitars built from a hand reading of the line on
+  a plain piano were rejected too. The first base the listener accepted was PRISM's `guitar dist` model run on the
+  whole stem, with no correction, and it stayed uncorrected from the earlier transcriptions. Metrics that rank
+  candidates against a stem don't show whether the phrase is musically right.
 - Validate every detector, including your own measurements, on a render of MIDI you know before trusting it on the
   reference. Render it dry and again with effects close to the reference's. On a clean render the best guitar model
   scored F 0.94, and with stereo modulation and reverb the same model fell to 0.29, firing short false notes at the
@@ -130,7 +143,10 @@ These come from one guitar part with heavy stereo processing, again as examples 
   extra points against random times with no note. Most extra points had flux far above that baseline. They were
   softer attacks under the detector's threshold, not invented notes.
 - A tail is not a note. Ending a note when it is no longer present at all keeps the reverb in it. Ending it when it
-  falls a fixed amount below its own peak got the median duration right on the known render.
+  falls a fixed amount below its own peak got the median duration right on the known render. It cut ringing strings
+  short, though. An open string ended 12 dB below its peak stopped after about 1 s, while the stem held it for two bars
+  (at that pitch the stem measured −44 dB and the render −75 dB). Letting a note ring until its string is struck again
+  matched (−41 dB).
 - Check that the notes can be played. On a guitar a new note on a string ends the one ringing on it, and the
   fretting hand spans a few frets. Assigning strings and frets at each attack removed every moment with more than
   six notes without capping the count, and the few attacks left without a fingering were mostly a harmonic or a

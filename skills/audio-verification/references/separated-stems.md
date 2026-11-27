@@ -47,8 +47,21 @@ These checks come from one mix with a stereo processed guitar, a residual "other
   once calibrated. Compare the layer with the original's stem directly as well, and treat the two results as the
   ends of a range rather than a gain.
 - Drum tuning shows up in a chroma. A pitch class 13 to 18 % stronger in the original's mix sat entirely in its drum
-  stem, a kick or toms an octave above the rebuild's. Compare chroma above about 200 Hz, or per stem, before taking
-  such a difference for missing notes.
+  stem. Compare chroma above about 200 Hz, or per stem, before taking such a difference for missing notes. It first
+  looked like a kick an octave above the rebuild's, but the kick peaks (48, 73 and 116 Hz in the original against 51,
+  83 and 126 Hz) put both kicks in the same register, with the original's E2 and E3 being harmonics of its kick. The
+  difference was the kick's resonance and harmonic balance, and a +3 dB bell at 75 Hz moved that band by 0.1 dB, since
+  EQ can't add a resonance the sample doesn't have.
+- Extra attacks in a stem can come from another part. The original's hi-hat played more sixteenths than the rebuild's
+  drums, and that excess leaked into its guitar stem as attacks that matched no guitar note.
+- SpectraLayers' Unmix Components split one guitar stem into three layers (Tonal, Noise and Transient), though the
+  manual for version 13 describes two, and their sum reproduced the stem at −138.8 dB. Swapping a rebuilt part in for
+  one layer locates a mismatch. Our guitar in place of Tonal dropped the envelope correlation from 0.99 to 0.31, and
+  adding the original's Noise and Transient to it didn't repair it, so the fault was in the main part and not in a
+  texture. Tonal plus Transient below 8 kHz worked as the target for fitting the guitar chain, since the pick's highs
+  live in Transient and separation noise dominates above 8 kHz. Pitched content in Noise is not proof of another
+  instrument. A second muted guitar built on it was refuted once the approved guitar went through the same separators.
+  Mixes that include the original's layers are for diagnosis only.
 - To tell a doubling from an independent layer, check whether its attacks fall on the known part's notes more often
   than chance, and where its energy sits relative to each note (same pitch, an octave up). Run the same test on the
   known part's own stem, since a part's harmonics put energy an octave up too. A "piano" stem had 73 to 79% of its

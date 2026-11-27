@@ -20,6 +20,13 @@ as the transcription, many on sixteenth offbeats.
 - An octave above a note sounding at the same time can be the lower note's second harmonic read as a note. Compare the
   even-to-odd harmonic ratio of the lower note with a calibration of that note alone, since a real upper note raises
   the even harmonics well above it. The test only works one way, since a weak real note passes as a harmonic.
+- To find the note each attack sounds, against the notes still ringing, compare the spectrum right after the attack
+  with the one right before and take the pitch that appeared, summing its harmonics. For its octave, compare the rise
+  of the fundamental in each candidate octave (frames centred 60 to 150 ms after the attack against 70 to 50 ms
+  before), asking for at least 6 dB. When only the upper octave rises, the struck note is the upper one. The
+  measurement worked, though the reading of the part built on it wasn't approved by ear.
+- Deciding palm mute per note from the early decay settled only 14 of 57 notes, since a muted and a normal note
+  decayed almost alike before the next attack in the other 43.
 
 ## Which string played a note
 

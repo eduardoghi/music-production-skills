@@ -21,6 +21,11 @@ of what to check.
   turn each voiced frame into a 12-class pitch vector, which ignores the octave, and correlate the two sequences at
   every lag. The peak stood clear of the next candidate (0.32 against 0.21) and agreed with the level envelope's best
   lag within 20 ms.
+- **Align a whole recording by its notes.** A correlation over a whole take landed far from the right place because
+  a long melisma skewed it, and aligning by the note onsets fixed it.
+- **Spot a recorder's gate.** A phone or recording app can gate the take, leaving digital silence between phrases and
+  cutting the ends. One word fell from −45 to −80 dBFS in about 0.15 s, against about 0.7 s for a natural decay. A cut
+  end can't be restored, so ask for a new take.
 - **Correct phrases only when methods agree.** Melody repeats in a song, so a short phrase can lock onto the wrong
   place. In the take, the long phrases sat within −80 to +70 ms of the guide, while some short ones gave 400 to
   600 ms by one method and much less by another. Shift a phrase only when its offset holds across methods. Otherwise

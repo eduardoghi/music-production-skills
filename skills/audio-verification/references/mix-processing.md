@@ -3,7 +3,8 @@
 Read this when a processor's effect on a part has to be judged, or when a part gets lost in a mix and the question
 is which other part covers it and where.
 
-The examples come from one vocal mix over a band. Their values show what the measures can say, not targets.
+The examples come from one vocal mix over a band and from one instrumental rebuilt against a finished master. Their
+values show what the measures can say, not targets.
 
 ## Judging a processor at the same level
 
@@ -51,6 +52,29 @@ and nothing elsewhere.
 To see the effect, measure the part with its returns against everything else from 1 to 4 kHz, as the median over the
 phrase's active frames, before and after. Echoes of a delay that enter at the end of a phrase raise that measure there,
 so note where returns overlap the phrase.
+
+## Mixing against a finished master
+
+When the reference is a released master, part of what separates it from a mix is its mastering.
+- Compare at one gain that matches the integrated loudness, and set aside what the master did. The reference had a
+  crest factor 2 to 6 dB lower per section, a PLR of 13.5 against 18.8 dB, different peaks and LRA, and probably a sub
+  cut, all from its mastering. The mix didn't imitate them, and they were measured again after limiting.
+- Measure the sum term of kick and bass before claiming they cancel. A low cut on the bass was once discarded because
+  "the subs partly cancel". The measured term was +0.7 dB on average from 20 to 40 Hz, so they added, and bar by bar it
+  went from −2.6 to +2.3 dB depending on whether the bass note fell in phase with the kick. A term that changes sign
+  with the note can't be fixed with one delay.
+- EQ can't create energy the source doesn't have. A boost at 75 Hz didn't restore a kick resonance the sample lacked,
+  and a deficit from 600 Hz to 1.2 kHz came from notes transcribed an octave low. On a guitar that needed more upper
+  harmonics, a cut at 400 Hz before the saturator worked, so the saturator generated them, while a bright shelf alone
+  overshot above 2.4 kHz and an EQ on the mids alone made it darker.
+- A reference whose brightness changes by section may need production that changes by section. The reference's level
+  above 4.8 kHz moved from −40 to −23 dB between sections, while each fixed chain stayed between −30 and −35 dB.
+  Switching chains per section, with 0.25 s crossfades starting 30 ms before the downbeat, and feeding reverb and delay
+  after the switch so their tails carry across, followed that contour.
+- Measure width in windows tied to the notes, in the direct sound (0 to 60 ms after each attack), the reflections (60
+  to 250 ms) and the tails, along with the tail's level against the direct sound. This showed a guitar narrower than
+  the reference in its direct sound itself, by 2.6 dB in the climax, rather than short of reverb. To find what sounds
+  in a pause, measure each return inside it. One tape delay return was the source, so only that return was automated.
 
 ## Limits
 
