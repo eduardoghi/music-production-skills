@@ -18,7 +18,21 @@ official documentation is at docs.aurallysound.com/prism.
 ## Controlling the window
 
 - The window is drawn with JUCE and ignored posted clicks on `SAVE MIDI`. Real clicks worked on the buttons and on
-  both selectors.
+  both selectors, but they move the user's pointer.
+- Windows UI Automation reaches the same controls without touching the pointer. Observed with pywinauto's UIA backend
+  on 1.2.01 in REAPER 7.86.
+  - Under the REAPER window's `reaperPluginHostWrapProc` pane, the plugin is a `Custom` element named `Prism`. Its
+    `Track:` and `Algo:` selectors (and `Snap:`) are `ComboBox` elements with the ExpandCollapse and Value patterns,
+    so Value reads the current track and algorithm.
+  - Expanding a selector opens a popup whose entries are `MenuItem` elements (`general`, `guitar dist`, `grand
+    piano` for the algorithm). Invoking an entry selects it, and the selector's Value then reads it.
+  - JUCE reuses the popup window from an earlier expand. Looking only at windows created after the expand found no
+    entries the second time, so search every window of the process and keep the visible `MenuItem` elements.
+  - `Save MIDI` is a `Button` with the Invoke pattern, and invoking it opened the save dialog below.
+  - The cursor position read the same right before and right after each call.
+- To export one track, pick the track, then the algorithm, and wait until two captures of the window taken 3 s apart
+  are the same (at least 20 s after a change of algorithm, while it reanalyzes). Then invoke `Save MIDI` and fill in
+  the dialog as below. Four exports (two stems, two algorithms) ran this way with no real input.
 
 ## Saving the MIDI
 

@@ -27,7 +27,7 @@ Read only the file of the plugin in use:
 | EXHALE (Output) | `plugins/exhale.md` | Presets load as snapshots through Kontakt's Load dialog, and only its Notes presets sustain a pitch |
 | Guitar Rig 7 | `plugins/guitar-rig-7.md` | Exposes its components only after a preset loads, which takes a real double click |
 | Archetype Cory Wong X | `plugins/archetype-cory-wong-x.md` | Its default amp and cabinet scoop the mids while the centroid looks right |
-| PRISM (Aurally Sound) | `plugins/prism.md` | Every window shows one shared ARA document, so pick the track first |
+| PRISM (Aurally Sound) | `plugins/prism.md` | Every window shows one shared ARA document, so pick the track first, and UI Automation reaches its selectors and Save MIDI without the mouse |
 | ReaSynth (REAPER) | `plugins/reasynth.md` | Every control reaches the host, and some units aren't what the text suggests |
 | Melodyne 5 Studio | `plugins/melodyne.md` | The standalone's menus take `WM_COMMAND`, and its MIDI export puts the tempo map in a second file |
 | SpectraLayers (Steinberg) | `plugins/spectralayers.md` | Unmix Components gave three layers whose sum is the stem, though the manual describes two |
