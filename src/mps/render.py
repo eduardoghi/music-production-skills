@@ -185,6 +185,100 @@ RENDER_SCRIPT = Path(__file__).resolve().parents[2] / "reaper" / "mps_render.lua
 WM_SETTEXT = 0x000C
 
 
+# the render log is <project>.mps-render.json, and mps_render.lua names its temporary project after it
+TEMP_SUFFIX = ".mps-render.json.empty.rpp"
+
+
+def reaper_ini() -> Path | None:
+    """REAPER's settings file, which every REAPER process, a render process too, rewrites when it quits."""
+    env = os.environ.get("MPS_REAPER_RESOURCE")
+    base = Path(env) if env else Path(os.environ.get("APPDATA", "")) / "REAPER"
+    path = base / "reaper.ini"
+    return path if path.is_file() else None
+
+
+def _ini_lines(path: Path) -> list[str]:
+    # bytes that aren't UTF-8 survive the round trip, and keepends keeps the file's own line breaks
+    return path.read_bytes().decode("utf-8", "surrogateescape").splitlines(keepends=True)
+
+
+def _ini_write(path: Path, lines: list[str]) -> None:
+    path.write_bytes("".join(lines).encode("utf-8", "surrogateescape"))
+
+
+def _section(lines: list[str], name: str) -> tuple[int, int] | None:
+    """Index of the first line after the section header and of the next header, matching the name in any case."""
+    start = None
+    for i, line in enumerate(lines):
+        s = line.strip()
+        if s.startswith("[") and s.endswith("]"):
+            if start is not None:
+                return start, i
+            if s[1:-1].lower() == name.lower():
+                start = i + 1
+    return (start, len(lines)) if start is not None else None
+
+
+def last_project(path: Path) -> str | None:
+    """The `lastproject` value of the [reaper] section, or None when the key isn't there."""
+    lines = _ini_lines(path)
+    sec = _section(lines, "reaper")
+    if sec is None:
+        return None
+    for line in lines[sec[0] : sec[1]]:
+        key, sep, value = line.partition("=")
+        if sep and key.strip().lower() == "lastproject":
+            return value.rstrip("\r\n")
+    return None
+
+
+def restore_after_render(path: Path, before: str | None, temp_project: Path) -> dict:
+    """Put back REAPER's last project and drop the render's temporary project from the recent list.
+
+    Before quitting, the render script opens an empty temporary project and deletes it (mps_render.lua), and the render
+    process then records that file as `lastproject` and in [Recent]. With "open last project on startup", the next
+    REAPER started normally tried to open the deleted file and stopped at an error dialog. Only `lastproject` and the
+    recent entries naming a temporary file are touched, and the file is written only when one of them changed. Entries
+    left by earlier renders go too, since every one names a file that was deleted (TEMP_SUFFIX).
+    """
+    lines = _ini_lines(path)
+    changed = {"lastproject_restored": False, "recent_removed": 0}
+    drop = set()
+    sec = _section(lines, "reaper")
+    if sec is not None:
+        for i in range(*sec):
+            key, sep, value = lines[i].partition("=")
+            if sep and key.strip().lower() == "lastproject":
+                if value.rstrip("\r\n") != before:
+                    if before is None:
+                        drop.add(i)
+                    else:
+                        lines[i] = f"{key}={before}{lines[i][len(lines[i].rstrip(chr(13) + chr(10))) :]}"
+                    changed["lastproject_restored"] = True
+                break
+    sec = _section(lines, "Recent")
+    if sec is not None:
+        temp = str(temp_project).lower()
+        others = []
+        for i in range(*sec):
+            key, sep, value = lines[i].partition("=")
+            k = key.strip()
+            if sep and k.lower().startswith("recent") and k[6:].isdigit():
+                entry = value.rstrip("\r\n").lower()
+                if entry == temp or entry.endswith(TEMP_SUFFIX):
+                    drop.add(i)
+                    changed["recent_removed"] += 1
+                else:
+                    others.append((i, len(k) - 6, value))
+        if changed["recent_removed"]:
+            # the entries are numbered from 1 with no gap, so the ones after a removed entry move up
+            for n, (i, width, value) in enumerate(others, start=1):
+                lines[i] = f"recent{n:0{width}d}={value}"
+    if changed["lastproject_restored"] or changed["recent_removed"]:
+        _ini_write(path, [x for i, x in enumerate(lines) if i not in drop])
+    return changed
+
+
 def _answer_delay(windows, d: dict, fx_delay: float) -> bool:
     """In a process started with a script, a project with RENDER_DELAY asks for the delay with an empty field and OK.
     Fill in the project's own delay and confirm, so the wait is the one the project asks for."""
@@ -227,6 +321,18 @@ def render_project(
         "MPS_RENDER_PROJECT": str(project.resolve()),
         "MPS_RENDER_LOG": str(log),
     }
+    ini = reaper_ini()
+    before = last_project(ini) if ini else None
+    try:
+        result = _run(cmd, env, log, mode, timeout, fx_delay, windows)
+    finally:
+        # the render process records its temporary project as REAPER's last project when it quits
+        restored = restore_after_render(ini, before, Path(str(log) + ".empty.rpp")) if ini else None
+    result["reaper_ini"] = restored
+    return result
+
+
+def _run(cmd: list[str], env: dict, log: Path, mode: str, timeout: float, fx_delay: float, windows) -> dict:
     start = time.time()
     proc = subprocess.Popen(cmd, env=env)
     answered = False

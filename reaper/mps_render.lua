@@ -60,6 +60,7 @@ local function step()
   if now - rendered_at < settle then return reaper.defer(step) end
   -- Loading can mark the project as changed (it did with Kontakt and a load delay), and Quit would then ask whether to
   -- save. Opening an empty project without the prompt drops those changes in memory and leaves the file alone.
+  -- REAPER then records that deleted file as its last project when it quits, and mps render puts the old value back.
   if log_path then
     local empty = log_path .. ".empty.rpp"
     local f = io.open(empty, "w")

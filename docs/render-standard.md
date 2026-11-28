@@ -140,6 +140,11 @@ still reported as an abnormal exit. `--mode renderproject` keeps the old way for
 - Loading a project with Kontakt and a load delay marked it as changed, so Quit asked whether to save, and the render
   process was ended at that dialog after writing the file. The script now opens an empty project without the prompt
   before quitting, which drops the change in memory and leaves the file as it was.
+- A render process shares `reaper.ini` with the REAPER the user works in, and writes it when it quits. It recorded its
+  deleted empty project as `lastproject` and in the recent list, so the next REAPER started normally, with "open last
+  project on startup", stopped at an error dialog that couldn't open the file. `mps render` now reads `lastproject`
+  before starting the process and puts it back once the process has ended, however it ended, and drops recent entries
+  that name such a temporary project. The record's `reaper_ini` says what was put back.
 
 ## Waiting for samples to load
 

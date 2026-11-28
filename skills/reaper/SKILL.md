@@ -227,6 +227,10 @@ mps render project.rpp --expect out.wav --samplerate 44100 --channels 2 --subtyp
   renders, waits 3 s (`--settle`) and quits normally. Quitting at once, as `-renderproject` does (`--mode
   renderproject`), crashed every process that had Kontakt loaded. The record's `process_check` confirms the render
   used the saved tempo. It starts with `MPS_ROLE=render`, so the bridge doesn't start in it.
+- The render process shares `reaper.ini` with the REAPER you work in and rewrites it when it quits. `mps render` puts
+  back `lastproject` afterwards and drops the render's temporary project from the recent list, since a deleted last
+  project stopped the next normal start of REAPER at an error dialog (`docs/render-standard.md`). A REAPER you end
+  by killing it doesn't write the file at all, so its own last project stays whatever was there before.
 - A dialog in the render process, such as a missing plugin, ends it in seconds with the dialog's text, instead of
   waiting for the timeout. A plugin window left open when the project was saved reopens in the render process and
   counts as such a dialog, so close the windows (`fx.show` with `show` false) before saving a project for rendering. The progress window doesn't count, and the `fx_delay` prompt is answered with the
