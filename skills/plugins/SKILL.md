@@ -21,7 +21,7 @@ Read only the file of the plugin in use:
 | Omnisphere 3 | `plugins/omnisphere.md` | Patches change the octave, and choosing one needs the interface |
 | ValhallaVintageVerb | `plugins/valhalla-vintageverb.md` | Starts at 100% mix, and its saved state restores exactly |
 | EZdrummer 3 | `plugins/ezdrummer-3.md` | Kits and pieces can be set in its state text, each piece code fits one position, and the shaken percussion plays late |
-| EZbass | `plugins/ezbass.md` | sounds an octave under the note written, keyswitch map, slides at a fixed speed, overlaps play legato, FL can load an old VST2 build |
+| EZbass | `plugins/ezbass.md` | sounds an octave under the note written, keyswitch map, slides at a fixed speed, overlaps play legato, pitch bend of ±2 semitones, the model switches through its state, FL can load an old VST2 build |
 | Evolution (Orange Tree) | `plugins/evolution.md` | Overlapping notes a tone apart become legato, unless each string gets its own MIDI channel |
 | Kontakt 8 | `plugins/kontakt.md` | Its state bytes change on every read, so compare states by render, and its menu rows move once an instrument is loaded |
 | EXHALE (Output) | `plugins/exhale.md` | Presets load as snapshots through Kontakt's Load dialog, and only its Notes presets sustain a pitch |

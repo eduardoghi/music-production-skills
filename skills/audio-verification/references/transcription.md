@@ -54,6 +54,31 @@ what to check, not as thresholds for another recording.
   On one stem, 45 of 235 repeats had no support from PRISM, Melodyne or the EZbass tracker. Only 21 of them fell
   within 60 ms of a kick. Merging all 45 held a note over a 162 ms rest. A per-event check kept 39 merged, restored
   6, and moved the attack that sat inside the rest to where the stem came back.
+- Dips that follow the drums can be in the mix itself and not in the separation. On one generated track every
+  separated bass stem started notes about 5 to 6 dB down when a kick fell with them, rising back in about 250 ms,
+  and stayed flat on notes with no hit. In the mix's own low band, notes that started with a snare and no kick rose
+  2.7 dB over the same window, so the dip was in the recording.
+  - Measure kick and snare apart, inside sustained notes as well as at note starts, and in more than one stem. Inside
+    notes, kicks dipped the bass 4.7, 5.4 and 7.6 dB and snares 1.0, 2.4 and 3.2 dB in three separations. A dip
+    modelled on the whole drum part dug the snares too deep until it was refitted on those measures.
+  - Read the stems for the effect, not for its cause. A sidechain on the bass and compression of the whole mix
+    left the same marks there, and a model keyed by the bass and drums summed fit no better than one keyed by the
+    drums alone.
+  - Keep that dip out of the notes and their velocities, since it belongs to the mix.
+- When separations disagree over a passage, a fixed threshold on how many stems agree can flag one bar and pass the
+  next. On one bass line two models sent two bars of it to their guitar and other stems, and only the first bar passed
+  the threshold. In the two stems that kept the bass, the band of its fundamental in the second bar was within 3 dB
+  of the confirmed first bar. Compare the bands of the stems that keep the part against confirmed notes nearby before
+  calling a passage doubtful.
+- Pitchless low energy inside a part's stem can be a drum fill. In one bass stem a gap with no pitch (CREPE and pYIN
+  found none) held peaks at 125 and 134 Hz, the same as the drum stem's during a tom fill, while the bass fundamental
+  sat 10 to 15 dB under the bars around it. It was read as drums and no note was added.
+- torchcrepe's default decoder (Viterbi) smooths pitch between frames, so slides look continuous in it whatever was
+  played. To see whether a slide stops on frets, read a tracker that decides frame by frame, such as PESTO, keeping
+  only frames within a semitone of the smoothed curve to drop its octave errors. On one bass line the long slides had
+  26 to 43% of their frames within 0.15 semitone of a whole semitone, near the 30% that a uniform glide gives. A curve
+  without steps fits a fretless bass or a very smooth slide, but doesn't show a fretless instrument by itself, since a
+  fast slide, the separation and the frame rate also blur steps.
 - Keep the transcription apart from the version adapted to an instrument. An articulation that is really in the
   recording may be one the library can't play faithfully, such as a soft re-attack it plays with a deep dip or a
   short bend it plays as a long slide. Keep the evidence and the transcribed note in the transcription, and record

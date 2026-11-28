@@ -28,6 +28,36 @@ as the transcription, many on sixteenth offbeats.
 - Deciding palm mute per note from the early decay settled only 14 of 57 notes, since a muted and a normal note
   decayed almost alike before the next attack in the other 43.
 
+## A new attack or the gain coming back
+
+A dip in the envelope of a sustained note can be the string played again or the part's gain recovering after a drum
+hit, from a compressor or a sidechain in the original mix. Both show a fall and a rise at the same place.
+
+The phase of the fundamental is evidence between the two, not proof.
+1. Band-pass the stem from 0.85 to 1.15 times the fundamental (second order, forward and backward) and unwrap the
+   phase of its analytic signal.
+2. Fit a straight line to the phase from 100 to 30 ms before the dip and extend it to 40 to 100 ms after.
+3. Take the circular mean of the difference there, from 0 to π radians.
+
+A change of gain leaves the phase where the line puts it. A string played again usually starts over at another
+phase, but it doesn't have to start at a random one, so a continuous phase leans toward a gain change without ruling
+out a new attack. The line assumes a steady pitch, so slides and bends break the test.
+
+What it gave on one bass line, in two separated stems, as an example:
+- **Controls.** Points inside sustained notes, away from attacks and drum hits, deviated by a median of 0.04 rad
+  (90th percentile 0.10) in one stem and 0.11 rad (0.36) in the other. Drum hits inside sustained notes, away from
+  slides, reached 0.68 rad.
+- **Dips read as attacks.** Of 62 dips that the envelope had taken as new attacks of the same note, 24 kept the phase
+  (up to 0.25 and 0.45 rad in the two stems) with a kick or snare from 20 ms before to 80 ms after, 4 kept it with no
+  hit nearby, 17 jumped by 0.75 rad or more in both stems and 17 stayed undecided.
+- **Repeats after a gap.** Of 79 repeats of one pitch after a short gap in the pitch track, 48 jumped. That those
+  mostly read as new attacks is what gave the test some weight.
+- **Rise time.** The time to rise to 90% of the following level didn't separate the cases. Attacks that started with
+  a drum hit were ducked too and took about 120 ms. The time to 50% separated them better, as a second clue.
+
+Merge the dips that kept their phase at a drum hit into the note before, keep the undecided ones as they were, and
+record the class and the measures of each in the transcription, so a later listening can undo any of them.
+
 ## Which string played a note
 
 The same pitch on different guitar strings has a different pattern of harmonics, which can suggest the string a

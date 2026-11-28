@@ -18,6 +18,57 @@ left. Removing the old DLL and rescanning in Options > Manage plugins made FL us
   can only reach it with `fl_click(..., focus=True)`, on the selector and again on the row.
 - The bridge sees only four named parameters (Bridge, Neck, Tone and Sub-Bass level). Settings has no option for
   release or fret noise.
+- In REAPER 7.86 the same VST3 build showed six named parameters, `1. Bass Control - Bridge`, `2. Bass Control - Neck`,
+  `3. Bass Control - Low`, `4. Bass Control - High`, `5. Comp - Threshold` and `6. Sub-Bass - Level`. A new instance
+  opened at 100%, 91%, 74%, 82%, 0% and 0%.
+
+## Model and preset through the state
+
+Observed in REAPER 7.86 on 1.3.4.
+
+- The state is the same kind of block as EZdrummer 3's (see `ezdrummer-3.md`), with readable text after
+  `PlugVersion` and size fields at bytes 0, 28 and 180 that follow the text's length.
+- The text names the model in `SAMPLER { soundlib "EZB-EZbassModern" ...` and the preset in
+  `BassPresetName "Clean DI"`. The mixer has `Bridge` and `Neck` channels and buss effects stored as base64 blocks.
+- In the Clean DI state those effects were two Toontrack EQs (one saved as an "Alembic Preamp" preset), with stored
+  gains of 11.1 to 11.6 dB on three bands at the default Low and High, and a Toontrack compressor whose threshold
+  control sat at 0%.
+- Changing `soundlib` to `EZB-EZbassVintage` and moving the size fields by the change in length switched the instance
+  to the Vintage model with no interface. The state read back named Vintage, and the same notes changed their
+  harmonic profile by up to 7 dB above the 6th harmonic.
+- The preset name, mixer and effects stay those of the state that was edited, so both models then play through the
+  same Clean DI chain. Whether that matches Vintage's own Clean DI preset wasn't checked.
+
+## Pitch bend and slides
+
+Observed in REAPER 7.86 on 1.3.4 (Vintage and Modern).
+
+- It follows MIDI pitch bend. A C2 bent fully down read 2.2 semitones lower and fully up 2.0 higher (CREPE). No
+  setting for the range was found.
+- A slide longer than the bend range stays continuous when the notes are chained in legato. Each time the target
+  pitch curve reaches 2 semitones from the sounding note, a new note starts on the semitone the curve has reached,
+  overlapping the previous one by 20 ms, and the bend returns to 0 at the same instant.
+- In one bass line the bend followed the curve measured in the reference every 10 ms. Slides and falls of up to 5
+  semitones then followed it within a median of 0.07 to 0.28 semitone per slide.
+- A bend reset while a released note still rings moves its tail. After a fall at the end of a note, the bend went
+  back to 0 5 ms before the next note, or 80 ms after the fall when the next note was farther away.
+- A bend left away from 0 carries over to every note after it. In one build a missed reset left 13 s of notes about a
+  semitone sharp, so check that every note outside a slide starts with the bend at 0.
+- Legato entries (overlapping notes) mostly added no attack, a median of +0.2 dB at 1 to 4 kHz against +9 dB for a
+  plucked note. Five of 18 still showed a step of 5 to 15 dB there.
+
+## Level, attack and decay by model
+
+Measured in REAPER 7.86 on A#1, C2, D#2, F2, G2 and C3, twice each, through the Clean DI chain with High at 82%:
+
+- From velocity 127 down to 40, the attack level fell 26.5 dB on Vintage and 16.7 dB on Modern. The attack level was
+  the highest point of a 25 ms envelope from 35 to 250 Hz in the first 300 ms.
+- The attack peak in that band (the highest 5 ms RMS in the first 40 ms over the median from 60 to 150 ms) barely
+  followed velocity on Vintage, 3.9 dB at velocity 55 and 4.7 dB at 127. In one bass line it sat about 1.7 dB above
+  the reference's, so softer velocities couldn't soften the attack.
+- From 80 to 560 ms after the attack the low band fell 3.4 dB/s on Vintage and 4.2 dB/s on Modern.
+- Repeats of one note and velocity differed by a median of 0.13 to 0.18 dB.
+- Two renders whose notes were the same from the start came out sample-identical (residual of −186 dB).
 
 ## Pitch and keyswitches
 

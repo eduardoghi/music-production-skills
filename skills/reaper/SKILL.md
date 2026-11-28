@@ -119,6 +119,13 @@ type prefix, such as `VST3:Kontakt 8` or `JS:`. `format` is `wav16`, `wav24` or 
   - When renders of the same MIDI must match sample by sample, build every project from the same map without
     rounding, and keep the map that the approved renders used. Replacing a map after audio items are placed stretches
     them (above).
+- **MIDI into a project with another map.** Convert the note times from seconds to quarter notes through the target
+  project's own map, rather than through the map the MIDI came with. The map is in the `PT` lines (time in seconds,
+  tempo, shape) of the project's `<TEMPOENVEX` block.
+  - In one checkpoint, a bass source placed this way stayed within 0.08 ms of its approved render and within 0.09 dB
+    of RMS per 4 bars.
+  - It still didn't match sample by sample (residual of −14 dB), since each note is rounded to a tick (960 per
+    quarter, about 0.9 ms at 71 BPM) and the two maps round differently.
 
 ## Volume automation
 
@@ -163,6 +170,14 @@ Once parts are approved, a checkpoint project keeps them safe and editable at on
   maps). Render each source alone as well, since a shared render needs a longer load delay (see Rendering).
 - Name the media after what they are and keep a note of where each render came from. When the project is archived,
   these are the files it needs (see the `project-archive` skill).
+- A later checkpoint can start from the previous one. `project.open` on it and `project.save` with the new path left
+  the earlier file byte for byte the same (SHA-256 before and after), so take that hash in the build script.
+- Mute the reference stem that the new part replaces, then list from `project.info` the tracks with items that really
+  play (not muted and with no muted folder above them). Compare that list with the parts meant to play, so no original
+  part plays together with its rebuild.
+- Bake the level into the approved render, so its track stays at 0 dB with no automation, and put the level on the
+  source's fader. To confirm an envelope applies once, render the approved parts together, subtract the other parts'
+  files and compare what remains with the approved file. It matched at −176 dBFS in one checkpoint.
 
 ## Plugin state
 
@@ -264,3 +279,13 @@ Deferred scripts kept running while a plugin or REAPER showed a modal dialog, so
   their results come back as exported files.
 - Projects are built through the API. Writing `.rpp` text from a template was measured and not adopted
   (`docs/reaper-investigation.md`). Reading a saved project, as `mps render` does for its record, is fine.
+- **Sidechain routing.** `send.add` picks the source channels but not the destination's. Every send arrives on the
+  destination's channels 1 and 2, so the bridge can't feed a compressor's sidechain input on 3 and 4. A destination
+  channel argument is a future improvement for the bridge.
+  - Meanwhile, in one song a drum-triggered dip on the bass was made as a gain curve. A compressor model keyed by the
+    approved drum render was run outside REAPER, and its gain was written as a post-FX volume envelope with a point
+    every 10 ms (13,000 to 16,000 points in one `envelope.set`, read back in full).
+  - Its render followed the intended curve within 0.02 dB (median over 10 ms windows) and matched the unprocessed
+    render times the curve at −59 dB.
+  - Such a curve is an alternative to a real sidechain, not a replacement. It doesn't react when the drums, the part
+    or the chain change, so compute it again after any such change, or move to a real sidechain at the mix.

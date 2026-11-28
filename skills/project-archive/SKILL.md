@@ -31,6 +31,9 @@ Most of an archive's waste can go earlier, one decision at a time, under these r
   checkpoints that record a consolidation, and the alternatives the user explicitly kept. Read each one's `FILE` lines and resolve them
   (relative paths from the project's folder, and allow for unquoted paths) to get the exact set of media they need.
   In one project the 16 projects worth keeping needed only 31 media files.
+- Match only lines that start with `FILE`. A pattern without that anchor also catches `RENDER_FILE`, which is where a
+  project renders to and not media it reads. In one cleanup plan that kept four render outputs as if a project needed
+  them.
 - For each approved render, find the project that produced it from its render record (`.render.json`, `project.path`).
   Instrument projects that play MIDI into a sampler can render the part again, so keep them too, with their own
   media (a re-amp project needs its DI).
